@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrazione - myStudent</title>
+
+    <!-- Custom CSS (include già i font) -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <div class="header-container">
+        <!-- Logo -->
+        <a th:href="@{/login}" class="logo">
+            <span class="material-symbols-outlined logo-icon">school</span>
+            <h2 class="logo-text">myStudent</h2>
+        </a>
+
+        <!-- Nav Links -->
+        <nav class="nav-links hidden-mobile">
+            <a th:href="@{/login}">Accedi</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main style="display: flex; align-items: center; justify-content: center; padding: 2.5rem 1rem;">
+    <div class="form-container">
+        <!-- Form Header -->
+        <div class="form-header">
+            <h1>Registrazione</h1>
+            <p>Inserisci i tuoi dati per creare un account e accedere al registro elettronico.</p>
+        </div>
+
+        <!-- Success Message -->
+        <div th:if="${success}" style="background-color: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <p style="margin: 0;">✅ Registrazione completata con successo!
+                <a th:href="@{/login}" style="color: #155724; font-weight: bold; text-decoration: underline;">Accedi qui</a>
+            </p>
+        </div>
+
+        <!-- Error Message (generale) -->
+        <div th:if="${errorMessage}" style="background-color: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <p style="margin: 0;" th:text="${errorMessage}"></p>
+        </div>
+
+        <!-- Form Body -->
+        <div class="form-body">
+            <form th:action="@{/register}" th:object="${registerDto}" method="POST">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <!-- Nome & Cognome -->
+                <div class="form-row form-row-2">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Nome</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined input-icon">person</span>
+                            <input
+                                    type="text"
+                                    id="name"
+                                    th:field="*{name}"
+                                    class="form-input"
+                                    placeholder="Inserisci nome"
+                                    required
+                            >
+                        </div>
+                        <p th:if="${#fields.hasErrors('name')}"
+                           class="error-message"
+                           th:errors="*{name}"></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last" class="form-label">Cognome</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined input-icon">person</span>
+                            <input
+                                    type="text"
+                                    id="last"
+                                    th:field="*{last}"
+                                    class="form-input"
+                                    placeholder="Inserisci cognome"
+                                    required
+                            >
+                        </div>
+                        <p th:if="${#fields.hasErrors('last')}"
+                           class="error-message"
+                           th:errors="*{last}"></p>
+                    </div>
+                </div>
+
+                <!-- Username -->
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">account_circle</span>
+                        <input
+                                type="text"
+                                id="username"
+                                th:field="*{username}"
+                                class="form-input"
+                                placeholder="Scegli un username"
+                                required
+                        >
+                    </div>
+                    <p th:if="${#fields.hasErrors('username')}"
+                       class="error-message"
+                       th:errors="*{username}"></p>
+                </div>
+
+                <!-- Role -->
+                <div class="form-group">
+                    <label for="role" class="form-label">Tipologia</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">category</span>
+                        <select
+                                id="role"
+                                th:field="*{role}"
+                                class="form-select"
+                                required
+                                onchange="toggleRoleFields()"
+                        >
+                            <option value="" disabled selected>Seleziona ruolo</option>
+                            <option value="TEACHER">Insegnante</option>
+                            <option value="STUDENT">Studente</option>
+                        </select>
+                        <span class="material-symbols-outlined select-arrow">expand_more</span>
+                    </div>
+                    <p th:if="${#fields.hasErrors('role')}"
+                       class="error-message"
+                       th:errors="*{role}"></p>
+                </div>
+
+                <div class="form-divider"></div>
+
+                <!-- Data di Nascita & Codice Fiscale -->
+                <div class="form-row form-row-2">
+                    <div class="form-group">
+                        <label for="dateOfBirth" class="form-label">Data di Nascita</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined input-icon">calendar_today</span>
+                            <input
+                                    type="date"
+                                    id="dateOfBirth"
+                                    th:field="*{dateOfBirth}"
+                                    class="form-input"
+                                    required
+                            >
+                        </div>
+                        <p th:if="${#fields.hasErrors('dateOfBirth')}"
+                           class="error-message"
+                           th:errors="*{dateOfBirth}"></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fiscalCode" class="form-label">Codice Fiscale</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined input-icon">badge</span>
+                            <input
+                                    type="text"
+                                    id="fiscalCode"
+                                    th:field="*{fiscalCode}"
+                                    class="form-input"
+                                    placeholder="es. RSSMRA85M01H501Z"
+                                    maxlength="16"
+                                    style="text-transform: uppercase;"
+                                    required
+                            >
+                        </div>
+                        <p th:if="${#fields.hasErrors('fiscalCode')}"
+                           class="error-message"
+                           th:errors="*{fiscalCode}"></p>
+                    </div>
+                </div>
+
+                <!-- Classi (per STUDENT e TEACHER) -->
+                <div class="form-group" id="classNameGroup">
+                    <label for="className" class="form-label">
+                        <span id="classNameLabel">Classe/i</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">class</span>
+                        <input
+                                type="text"
+                                id="className"
+                                th:field="*{className}"
+                                class="form-input"
+                                placeholder="es. 3A"
+                        >
+                    </div>
+                    <small id="classNameHelp" style="color: #6c757d; font-size: 0.875rem; margin-top: 0.25rem; display: block;">
+                        <!-- Dinamico in base al ruolo -->
+                    </small>
+                    <p th:if="${#fields.hasErrors('className')}"
+                       class="error-message"
+                       th:errors="*{className}"></p>
+                </div>
+
+                <!-- Materia (solo per TEACHER) -->
+                <div class="form-group" id="subjectGroup" style="display: none;">
+                    <label for="subject" class="form-label">Materia Insegnata</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">menu_book</span>
+                        <input
+                                type="text"
+                                id="subject"
+                                th:field="*{subject}"
+                                class="form-input"
+                                placeholder="es. Matematica"
+                        >
+                    </div>
+                    <p th:if="${#fields.hasErrors('subject')}"
+                       class="error-message"
+                       th:errors="*{subject}"></p>
+                </div>
+
+                <div class="form-divider"></div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">lock</span>
+                        <input
+                                type="password"
+                                id="password"
+                                th:field="*{password}"
+                                class="form-input"
+                                placeholder="Inserisci password"
+                                required
+                        >
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <span class="material-symbols-outlined">visibility</span>
+                        </button>
+                    </div>
+                    <p th:if="${#fields.hasErrors('password')}"
+                       class="error-message"
+                       th:errors="*{password}"></p>
+                </div>
+
+                <!-- Conferma Password -->
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Conferma password</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">lock</span>
+                        <input
+                                type="password"
+                                id="confirmPassword"
+                                th:field="*{confirmPassword}"
+                                class="form-input"
+                                placeholder="Conferma password"
+                                required
+                        >
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                            <span class="material-symbols-outlined">visibility</span>
+                        </button>
+                    </div>
+                    <p th:if="${#fields.hasErrors('confirmPassword')}"
+                       class="error-message"
+                       th:errors="*{confirmPassword}"></p>
+                </div>
+
+                <!-- Submit Button -->
+                <div style="padding-top: 1rem;">
+                    <button type="submit" class="btn btn-primary btn-large btn-full">
+                        <span>Crea Account</span>
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+
+                    <p class="form-text">
+                        <span class="form-text-secondary">Hai già un account?</span>
+                        <a th:href="@{/login}" class="form-link">Accedi qui</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-content">
+        <p>&copy; 2025 myStudent</p>
+    </div>
+</footer>
+
+<!-- JavaScript -->
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

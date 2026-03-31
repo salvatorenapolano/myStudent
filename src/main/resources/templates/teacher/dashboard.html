@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Insegnante - myStudent</title>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body th:attr="data-success-message=${successMessage}, data-error-message=${errorMessage}">
+
+    <div th:if="${errorMessage}" class="notification notification-error show">
+        <span class="material-symbols-outlined">error</span>
+        <span th:text="${errorMessage}"></span>
+    </div>
+    <!-- ⬆️ FINE MESSAGGI FLASH -->
+
+<!-- Header / Navbar -->
+<header>
+    <div class="header-container">
+        <!-- Logo -->
+        <a href="#" class="logo">
+            <span class="material-symbols-outlined logo-icon">school</span>
+            <h1 class="logo-text">myStudent</h1>
+        </a>
+
+        <!-- User Menu -->
+        <div class="user-menu">
+            <button class="user-menu-button" aria-label="Menu utente">
+                <span class="material-symbols-outlined">person</span>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="user-menu-dropdown">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <span class="material-symbols-outlined">face</span>
+                    </div>
+                    <div class="user-details">
+                        <p class="user-name">Prof. <span th:text="${teacher.firstName} + ' ' + ${teacher.lastName}"></span></p>
+                        <p class="user-class">Insegnante - <span th:text="${teacher.teacherSubject}"></span></p>
+                    </div>
+                </div>
+
+                <div class="menu-divider"></div>
+
+                <form th:action="@{/logout}" method="POST" id="logoutForm" style="display: none;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                </form>
+                <a href="#" class="logout-button">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span>Esci</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main>
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <h2>Bentornato, Prof. <span th:text="${teacher.lastName}"></span></h2>
+        <p>Gestisci voti, assenze e monitora le statistiche dei tuoi studenti.</p>
+    </div>
+
+    <!-- Statistiche Studenti con Leggenda -->
+    <div class="table-with-legend">
+        <!-- Leggenda Azioni -->
+        <div class="legend-card">
+            <h4>Azioni Disponibili</h4>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-icon legend-icon-blue">
+                        <span class="material-symbols-outlined">grade</span>
+                    </div>
+                    <span class="legend-text">Inserisci Voto</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon legend-icon-orange">
+                        <span class="material-symbols-outlined">event_busy</span>
+                    </div>
+                    <span class="legend-text">Inserisci Assenza</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabella Statistiche Studenti -->
+        <div class="table-card-flex">
+            <div class="table-header">
+                <h3>
+                    <span class="material-symbols-outlined">analytics</span>
+                    Statistiche Studenti
+                </h3>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>Cognome</th>
+                        <th>Nome</th>
+                        <th>Classe</th>
+                        <th>Assenze Totali</th>
+                        <th>Media Voti</th>
+                        <th>Azioni</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="listStudent : ${students}">
+                        <td><strong th:text="${listStudent.student.lastName}">Rossi</strong></td>
+                        <td th:text="${listStudent.student.firstName}">Mario</td>                        
+                        <td><span class="badge-type" th:text="${listStudent.student.className}">5A</span></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${listStudent.totalAbsences <= 50} ? 'badge-success' : 'badge-danger'"
+                                  th:text="${listStudent.totalAbsences}">12</span>
+                        </td>
+                        <td>
+                            <!-- ✅ BADGE CLICCABILE PER IL GRAFICO -->
+                            <span class="badge badge-clickable btn-grafico"
+                                  th:classappend="${listStudent.averageGrade >= 6} ? 'badge-success' : 'badge-danger'"
+                                  th:text="${listStudent.averageGrade}"
+                                  th:attr="data-student-id=${listStudent.student.id},
+                                           data-first-name=${listStudent.student.firstName},
+                                           data-last-name=${listStudent.student.lastName},
+                                           data-class-name=${listStudent.student.className},
+                                           data-grades=${#strings.listJoin(listStudent.grades, ',')},
+                                           data-average=${listStudent.averageGrade}"
+                                  title="Clicca per visualizzare il grafico dei voti">8.5</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <!-- Per passare correttamente i dati al javascript uso data-* attributes invece di onclick con stringhe -->
+                                <button
+                                        class="btn-action btn-action-blue btn-voto"
+                                        th:attr="data-student-id=${listStudent.student.id},
+                                                     data-first-name=${listStudent.student.firstName},
+                                                     data-last-name=${listStudent.student.lastName},
+                                                     data-class-name=${listStudent.student.className}"
+                                        title="Inserisci Voto">
+                                    <span class="material-symbols-outlined">grade</span>
+                                </button>
+                                <button
+                                        class="btn-action btn-action-orange btn-assenza"
+                                        th:attr="data-student-id=${listStudent.student.id},
+                                                     data-first-name=${listStudent.student.firstName},
+                                                     data-last-name=${listStudent.student.lastName},
+                                                     data-class-name=${listStudent.student.className}"
+                                        title="Inserisci Assenza">
+                                    <span class="material-symbols-outlined">event_busy</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Inserisci Voto -->
+<div id="votoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>
+                <span class="material-symbols-outlined">grade</span>
+                Inserisci Voto
+            </h2>
+            <button class="modal-close" onclick="closeModal('votoModal')">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="votoForm" th:action="@{/teacher/grade}" method="POST">
+                <!-- CSRF Token per Spring Security -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <!-- Campo Hidden con ID Studente -->
+                <input type="hidden" id="voto-studente-id" name="studentId">
+
+                <!-- Campo readonly per mostrare lo studente -->
+                <div class="form-group">
+                    <label for="voto-studente-display" class="form-label">Studente</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">person</span>
+                        <input
+                                type="text"
+                                id="voto-studente-display"
+                                class="form-input"
+                                readonly
+                                style="background-color: #f5f5f5; cursor: not-allowed;"
+                        >
+                    </div>
+                </div>
+
+                <!-- Tipo di Voto e Valore -->
+                <div class="form-row form-row-2">
+                    <div class="form-group">
+                        <label for="voto-tipo" class="form-label">Tipo di Voto</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined input-icon">category</span>
+                            <select id="voto-tipo" name="gradeType" class="form-input" required>
+                                <option value="">Seleziona tipo</option>
+                                <option value="ORAL">Orale</option>
+                                <option value="WRITTEN">Scritto</option>
+                                <option value="PRACTICAL">Pratico</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="voto-valore" class="form-label">Voto (1-10)</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined input-icon">star</span>
+                            <input
+                                    type="number"
+                                    id="voto-valore"
+                                    name="grade"
+                                    class="form-input"
+                                    placeholder="Es. 7.5"
+                                    min="1"
+                                    max="10"
+                                    step="0.5"
+                                    required
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data -->
+                <div class="form-group">
+                    <label for="voto-data" class="form-label">Data</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">calendar_today</span>
+                        <input
+                                type="date"
+                                id="voto-data"
+                                name="lessonDate"
+                                class="form-input"
+                                required
+                        >
+                    </div>
+                </div>
+
+                <!-- Descrizione -->
+                <div class="form-group">
+                    <label for="voto-descrizione" class="form-label">Descrizione</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">description</span>
+                        <input
+                                type="text"
+                                id="voto-descrizione"
+                                name="notes"
+                                class="form-input"
+                                placeholder="Es. Verifica equazioni secondo grado"
+                                required
+                        >
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('votoModal')">
+                        Annulla
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <span>Salva Voto</span>
+                        <span class="material-symbols-outlined">check</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Inserisci Assenza -->
+<div id="assenzaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>
+                <span class="material-symbols-outlined">event_busy</span>
+                Inserisci Assenza
+            </h2>
+            <button class="modal-close" onclick="closeModal('assenzaModal')">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="assenzaForm" th:action="@{/teacher/absence}" method="POST">
+                <!-- CSRF Token per Spring Security -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <!-- Campo Hidden con ID Studente -->
+                <input type="hidden" id="assenza-studente-id" name="studentId">
+
+                <!-- Campo readonly per mostrare lo studente -->
+                <div class="form-group">
+                    <label for="assenza-studente-display" class="form-label">Studente</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">person</span>
+                        <input
+                                type="text"
+                                id="assenza-studente-display"
+                                class="form-input"
+                                readonly
+                                style="background-color: #f5f5f5; cursor: not-allowed;"
+                        >
+                    </div>
+                </div>
+
+                <!-- Data e Ore di Assenza -->
+                <div class="form-row form-row-2">
+                    <div class="form-group">
+                        <label for="assenza-data" class="form-label">Data</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined input-icon">calendar_today</span>
+                            <input
+                                    type="date"
+                                    id="assenza-data"
+                                    name="lessonDate"
+                                    class="form-input"
+                                    required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="assenza-ore" class="form-label">Ore di Assenza</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined input-icon">schedule</span>
+                            <input
+                                    type="number"
+                                    id="assenza-ore"
+                                    name="hoursAbsent"
+                                    class="form-input"
+                                    placeholder="Es. 4"
+                                    min="1"
+                                    required
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Note (opzionale) -->
+                <div class="form-group">
+                    <label for="assenza-note" class="form-label">Note (opzionale)</label>
+                    <div class="input-wrapper">
+                        <span class="material-symbols-outlined input-icon">description</span>
+                        <input
+                                type="text"
+                                id="assenza-note"
+                                name="notes"
+                                class="form-input"
+                                placeholder="Note aggiuntive sull'assenza"
+                        >
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('assenzaModal')">
+                        Annulla
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <span>Salva Assenza</span>
+                        <span class="material-symbols-outlined">check</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ NUOVO MODAL GRAFICO VOTI -->
+<div id="graficoModal" class="modal">
+    <div class="modal-content modal-content-wide">
+        <div class="modal-header">
+            <h2>
+                <span class="material-symbols-outlined">show_chart</span>
+                Andamento Voti
+            </h2>
+            <button class="modal-close" onclick="closeModal('graficoModal')">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Info Studente -->
+            <div class="chart-student-info">
+                <div class="chart-student-details">
+                    <h3 id="chart-student-name">Mario Rossi</h3>
+                    <p id="chart-student-class">Classe 3A</p>
+                </div>
+                <div class="chart-average-badge">
+                    <span class="chart-label">Media:</span>
+                    <span class="chart-average-value" id="chart-average">8.5</span>
+                </div>
+            </div>
+
+            <!-- Grafico -->
+            <div class="chart-container">
+                <canvas id="gradesChart"></canvas>
+            </div>
+
+            <!-- Info aggiuntive -->
+            <div class="chart-stats">
+                <div class="chart-stat-item">
+                    <span class="material-symbols-outlined">trending_up</span>
+                    <div>
+                        <p class="stat-label">Voto Massimo</p>
+                        <p class="stat-value" id="max-grade">-</p>
+                    </div>
+                </div>
+                <div class="chart-stat-item">
+                    <span class="material-symbols-outlined">trending_down</span>
+                    <div>
+                        <p class="stat-label">Voto Minimo</p>
+                        <p class="stat-value" id="min-grade">-</p>
+                    </div>
+                </div>
+                <div class="chart-stat-item">
+                    <span class="material-symbols-outlined">functions</span>
+                    <div>
+                        <p class="stat-label">Totale Voti</p>
+                        <p class="stat-value" id="total-grades">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-content">
+        <p>&copy; 2025 myStudent</p>
+    </div>
+</footer>
+
+<!-- JavaScript -->
+<script th:src="@{/js/script.js}"></script>
+<script th:src="@{/js/teacher.js}"></script>
+</body>
+</html>

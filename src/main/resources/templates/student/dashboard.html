@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Studente - myStudent</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<!-- Header / Navbar -->
+<header>
+    <div class="header-container">
+        <!-- Logo -->
+        <a href="#" class="logo">
+            <span class="material-symbols-outlined logo-icon">school</span>
+            <h1 class="logo-text">myStudent</h1>
+        </a>
+
+        <!-- User Menu -->
+        <div class="user-menu">
+            <button class="user-menu-button" aria-label="Menu utente">
+                <span class="material-symbols-outlined">account_circle</span>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="user-menu-dropdown">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <span class="material-symbols-outlined">account_circle</span>
+                    </div>
+                    <div class="user-details">
+                        <p class="user-name" th:text="${studentDto.student.firstName} + ' ' + ${studentDto.student.lastName}">Mario Rossi</p>
+                        <p class="user-class" th:text="'Studente - ' + ${studentDto.student.className}">Studente - Classe 5A</p>
+                    </div>
+                </div>
+
+                <div class="menu-divider"></div>
+
+                <a href="edit-profile.html" class="menu-item">
+                    <span class="material-symbols-outlined">edit</span>
+                    <span>Modifica Profilo</span>
+                </a>
+
+                <!-- ✅ Form logout nascosto -->
+                <form th:action="@{/logout}" method="POST" id="logoutForm" style="display: none;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                </form>
+
+                <!-- ✅ Link che triggera il logout -->
+                <a href="#" class="logout-button" id="logoutLink">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span>Esci</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main>
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <h2>Bentornato, <span th:text="${studentDto.student.firstName}">Mario</span>!</h2>
+        <p>Ecco il riepilogo della tua situazione scolastica.</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <!-- Media Voti Card -->
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">
+                <span class="material-symbols-outlined">school</span>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Media Voti</p>
+                <p class="stat-value" th:text="${studentDto.averageGrade}">7.5</p>
+            </div>
+        </div>
+
+        <!-- Totale Assenze Card -->
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-orange">
+                <span class="material-symbols-outlined">event_busy</span>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Totale Assenze</p>
+                <p class="stat-value" th:text="${studentDto.totalAbsences}">12</p>
+            </div>
+        </div>
+
+        <!-- Ultimo Voto Card -->
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-purple">
+                <span class="material-symbols-outlined">grade</span>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Ultimo Voto</p>
+                <p class="stat-value" th:text="${studentDto.lastGrade}">8.5</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables Section -->
+    <div class="tables-container">
+        <!-- Tabella Voti -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3>
+                    <span class="material-symbols-outlined">assignment</span>
+                    Registro Voti
+                </h3>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>Materia</th>
+                        <th>Voto</th>
+                        <th>Data</th>
+                        <th>Note</th>
+                        <th>Tipo</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="record : ${studentDto.records}">
+                        <td><strong th:text="${record.subject}">Matematica</strong></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${record.grade >= 6} ? 'badge-success' : 'badge-danger'"
+                                  th:text="${record.grade}">8.5</span>
+                        </td>
+                        <td th:text="${record.lessonDate}">15/12/2024</td>
+                        <td th:text="${record.notes ?: '-'}">Verifica</td>
+                        <td th:text="${record.type ?: '-'}">Orale</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-content">
+        <p>&copy; 2025 myStudent</p>
+    </div>
+</footer>
+
+<!-- JavaScript -->
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>
