@@ -57,7 +57,7 @@ Fornire una piattaforma semplice e intuitiva per la gestione scolastica, con acc
    git clone https://github.com/salvatorenapolano/myStudent
 2. Costruisci l'immagine Docker:
    ```bash
-   docker build -t mystudent .
+   docker compose up --build
 3. Avvia il container creato:
    ```bash
    docker run -p 8080:8080 mystudent
