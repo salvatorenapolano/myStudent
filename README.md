@@ -41,6 +41,9 @@ Fornire una piattaforma semplice e intuitiva per la gestione scolastica, con acc
 
 ### Opzione 1 – Locale
 1. Clona la repository
+   ```bash
+   git clone https://github.com/salvatorenapolano/myStudent
+
 2. Configura il database MySQL nel file `application.properties`
 3. Avvia l'applicazione con:
    ```bash
@@ -50,6 +53,9 @@ Fornire una piattaforma semplice e intuitiva per la gestione scolastica, con acc
 ### Opzione 2 – Docker
 (Assicurati di avere docker installato)
 1. Clona la repository
+   ```bash
+   git clone https://github.com/salvatorenapolano/myStudent
+
 2. Configura il database MySQL nel file `application.properties`
 3. Costruisci l'immagine Docker:
    ```bash
