@@ -55,12 +55,10 @@ Fornire una piattaforma semplice e intuitiva per la gestione scolastica, con acc
 1. Clona la repository
    ```bash
    git clone https://github.com/salvatorenapolano/myStudent
-
-2. Configura il database MySQL nel file `application.properties`
-3. Costruisci l'immagine Docker:
+2. Costruisci l'immagine Docker:
    ```bash
    docker build -t mystudent .
-4. Avvia il container creato:
+3. Avvia il container creato:
    ```bash
    docker run -p 8080:8080 mystudent
-5. Accedi dal browser su: http://localhost:8080
+4. Accedi dal browser su: http://localhost:8080
