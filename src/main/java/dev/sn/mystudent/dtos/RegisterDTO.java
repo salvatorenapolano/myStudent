@@ -3,6 +3,7 @@ package dev.sn.mystudent.dtos;
 import dev.sn.mystudent.models.Role;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -32,8 +33,8 @@ public class RegisterDTO {
     @NotNull(message = "La data di nascita è obbligatoria")
     private LocalDate dateOfBirth;
 
+    @Pattern(regexp = "^[A-Za-z0-9]{16}$", message = "Il codice fiscale deve essere di 16 caratteri alfanumerici")
     @NotEmpty(message = "Il codice fiscale è obbligatorio")
-    @Size(min = 16, max = 16, message = "Il codice fiscale deve essere di 16 caratteri")
     private String fiscalCode;
 
     @NotEmpty
